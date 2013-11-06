@@ -21,6 +21,9 @@ module IsItWorking
   class Handler
     PATH_INFO = "PATH_INFO".freeze
     
+    # HTTP status code to return if a check fails. Defaults to 500 (Server Error).
+    attr_accessor :error_code
+    
     # Create a new handler. This method can take a block which will yield itself so it can
     # be configured.
     #
@@ -35,6 +38,7 @@ module IsItWorking
       @hostname = `hostname`.chomp
       @filters = []
       @mutex = Mutex.new
+      @error_code = 500
       yield self if block_given?
     end
 
@@ -144,7 +148,7 @@ module IsItWorking
         info << "Timestamp: #{Time.now.iso8601}"
         info << "Elapsed Time: #{(elapsed_time * 1000).round}ms"
         
-        code = (fail ? 200 : 500)
+        code = (fail ? 200 : error_code)
         
         [code, headers, [info.join("\n"), "\n\n", messages.join("\n")]]
       end

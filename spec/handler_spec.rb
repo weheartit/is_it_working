@@ -98,6 +98,17 @@ describe IsItWorking::Handler do
     response.last.flatten.join("").should include("block - down")
   end
   
+  it "should return the HTTP code specified in error_status on an error" do
+    handler = IsItWorking::Handler.new do |h|
+      h.error_code = 417
+      h.check :block do |status|
+        status.fail("down")
+      end
+    end
+    response = handler.call({})
+    response.first.should == 417
+  end
+  
   it "should be able to be used in a middleware stack with the route /is_it_working" do
     app_response = [200, {"Content-Type" => "text/plain"}, ["OK"]]
     app = lambda{|env| app_response}
